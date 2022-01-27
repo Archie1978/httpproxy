@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+var SIZE_KEY int = 2048
+
 // CaSigner is a certificate signer by CA certificate. It supports caching.
 type CaSigner struct {
 	// Ca specifies CA certificate. You must set before using.
@@ -115,7 +117,7 @@ func SignHosts(ca tls.Certificate, hosts []string) (*tls.Certificate, error) {
 		}
 	}
 	rnd := mrand.New(mrand.NewSource(serial.Int64()))
-	certPriv, err := rsa.GenerateKey(rnd, 1024)
+	certPriv, err := rsa.GenerateKey(rnd, SIZE_KEY)
 	if err != nil {
 		return nil, err
 	}

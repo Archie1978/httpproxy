@@ -117,14 +117,11 @@ type Context struct {
 For more examples, examples/
 
 ### examples/go-httpproxy-simple
-Create key
+* Create key
 openssl genrsa -des3 -out myCA.key 2048
-Decode key
+* Decode key
 openssl rsa -in myCA.key -out myCA.key.clear
-Create certificate
-openssl req -config openssl.cnf       -key myCA.key.clear       -new -x509 -days 7300 -sha256 -extensions v3_ca       -out ca.cert.pem
-
-
+* Change default_ca,dir,countryName_default into openssl.cnf
 openssl.cnf
 ```
  OpenSSL root CA configuration file.
@@ -136,7 +133,7 @@ default_ca =  My CA TLS
 
 [ CA_default ]
 # Directory and file locations.
-dir               = /home/ron/workspace/go/src/idesi.fr/dev/proxy_http_1.0 
+dir               = github.com/Archie1978/httpproxy
 certs             = $dir/certs
 crl_dir           = $dir/crl
 new_certs_dir     = $dir/newcerts
@@ -264,6 +261,9 @@ extendedKeyUsage = critical, OCSPSigning
 
 ```
 
+Create certificate
+openssl req -config openssl.cnf       -key myCA.key.clear       -new -x509 -days 7300 -sha256 -extensions v3_ca       -out ca.cert.pem
+
 
 
 ```go
@@ -320,8 +320,19 @@ func OnResponse(ctx *httpproxy.Context, req *http.Request,
 }
 
 func main() {
-	// Create a new proxy with default certificate pair.
-	prx, _ := httpproxy.NewProxy()
+privateKey:=[]byte(`-----BEGIN RSA PRIVATE KEY-----
+..
+-----END RSA PRIVATE KEY-----
+`)
+	certificate:=[]byte(`-----BEGIN CERTIFICATE-----
+....
+-----END CERTIFICATE-----
+`)
+	// Use a new proxy with certificate pair.
+	prx, err := httpproxy.NewProxyCert(certificate,privateKey)
+	if err!=nil{
+		log.Fatal("Error start proxy: ",err)
+	}
 
 	// Set handlers.
 	prx.OnError = OnError
