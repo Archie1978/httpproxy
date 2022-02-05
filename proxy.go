@@ -66,11 +66,17 @@ func NewProxy() (*Proxy, error) {
 
 // NewProxyCert returns a new Proxy given CA certificate and key.
 func NewProxyCert(caCert, caKey []byte) (*Proxy, error) {
+	signer := NewCaSignerCache(1024)
+	return NewProxyCertSigner(caCert, caKey, signer)
+}
+
+// NewProxyCert returns a new Proxy given CA certificate and key.
+func NewProxyCertSigner(caCert, caKey []byte, signer *CaSigner) (*Proxy, error) {
 	prx := &Proxy{
 		Rt: &http.Transport{TLSClientConfig: &tls.Config{},
 			Proxy: http.ProxyFromEnvironment},
 		MitmChunked: true,
-		signer:      NewCaSignerCache(1024),
+		signer:      signer,
 	}
 	prx.signer.Ca = &prx.Ca
 	if caCert == nil {

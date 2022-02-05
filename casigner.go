@@ -15,6 +15,12 @@ import (
 
 var SIZE_KEY int = 2048
 
+// Backup ca generate
+type BackupCertificate interface {
+	Load(host string) *tls.Certificate
+	Save(host string, certificate *tls.Certificate) error
+}
+
 // CaSigner is a certificate signer by CA certificate. It supports caching.
 type CaSigner struct {
 	// Ca specifies CA certificate. You must set before using.
@@ -25,6 +31,8 @@ type CaSigner struct {
 	certList  []string
 	certIndex int
 	certMax   int
+
+	BackupCertificate BackupCertificate
 }
 
 // NewCaSigner returns a new CaSigner without caching.
@@ -66,12 +74,11 @@ func (c *CaSigner) SignHost(host string) (cert *tls.Certificate) {
 	if cert != nil {
 		return
 	}
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	cert = c.certMap[host]
-	if cert != nil {
+
+	if cert = c.BackupCertificate.Load(host); cert != nil {
 		return
 	}
+
 	crt, err := SignHosts(*c.Ca, []string{host})
 	if err != nil {
 		return nil
@@ -86,6 +93,11 @@ func (c *CaSigner) SignHost(host string) (cert *tls.Certificate) {
 	if c.certIndex >= c.certMax {
 		c.certIndex = 0
 	}
+
+	if err = c.BackupCertificate.Save(host, crt); err != nil {
+		return
+	}
+
 	return
 }
 
