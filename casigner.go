@@ -46,10 +46,11 @@ func NewCaSignerCache(max int) *CaSigner {
 		max = 0
 	}
 	return &CaSigner{
-		certMap:   make(map[string]*tls.Certificate),
-		certList:  make([]string, max),
-		certIndex: 0,
-		certMax:   max,
+		certMap:           make(map[string]*tls.Certificate),
+		certList:          make([]string, max),
+		certIndex:         0,
+		certMax:           max,
+		BackupCertificate: &WithoutBackupCertificate{},
 	}
 }
 
