@@ -102,7 +102,6 @@ func ServeResponse(w http.ResponseWriter, resp *http.Response) error {
 		w.WriteHeader(resp.StatusCode)
 		w2 := httputil.NewChunkedWriter(w)
 		if resp.Body != nil {
-			fmt.Println("=====>")
 			if _, err := io.Copy(w2, resp.Body); err != nil {
 				return err
 			}
